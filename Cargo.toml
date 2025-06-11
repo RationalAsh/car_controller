@@ -1,0 +1,35 @@
+[package]
+name = "car_controller"
+version = "0.1.0"
+edition = "2024"
+
+# Set up the release profile to optimize our binaries
+[profile.release]
+codegen-units = 1 # better optimizations
+debug = true      # symbols are nice and they don't increase the size on Flash
+lto = "fat"       # better optimizations
+opt-level = "s"   # Optimize for size
+
+[dependencies]
+cortex-m = { version = "0.7.7", features = [
+    "inline-asm",
+    "critical-section-single-core",
+] }
+cortex-m-rt = "0.7.5"
+critical-section = "1.2.0"
+defmt = "1.0.1"
+defmt-rtt = "1.0.0"
+embassy-executor = { version = "0.7.0", features = [
+    "defmt",
+    "arch-cortex-m",
+    "executor-thread",
+] }
+embassy-stm32 = { version = "0.2.0", features = [
+    "defmt",
+    "stm32f103c8",
+    "memory-x",
+    "time-driver-tim1",
+] }
+embassy-sync = { version = "0.7.0", features = ["defmt"] }
+embassy-time = { version = "0.4.0", features = ["defmt", "tick-hz-1_000_000"] }
+panic-probe = { version = "1.0.0", features = ["defmt"] }
