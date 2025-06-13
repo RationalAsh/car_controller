@@ -3,6 +3,13 @@ name = "car_controller"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "car_controller"
+path = "src/main.rs"
+test = false
+doctest = false
+bench = false
+
 # Set up the release profile to optimize our binaries
 [profile.release]
 codegen-units = 1 # better optimizations
