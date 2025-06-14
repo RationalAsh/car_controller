@@ -378,6 +378,8 @@ pub trait MPU6050BitField {
     fn to_value(&self) -> u8;
 }
 
+// When set to 1, this bit resets all internal registers to their
+// default values. The bit automatically clears to 0 after the reset is complete.
 pub enum DeviceReset {
     /// Reset the device.
     Reset = 0x01,
@@ -403,6 +405,38 @@ impl MPU6050BitField for DeviceReset {
     fn to_value(&self) -> u8 {
         match self {
             DeviceReset::Reset => 0x01,
+        }
+    }
+}
+
+pub enum SleepMode {
+    /// Device is in sleep mode.
+    Sleep = 0x01,
+    /// Device is not in sleep mode.
+    WakeUp = 0x00,
+}
+
+impl MPU6050BitField for SleepMode {
+    fn addr() -> u8 {
+        MPU6050_RA_PWR_MGMT_1
+    }
+
+    fn location() -> u8 {
+        MPU6050_PWR1_SLEEP_BIT
+    }
+
+    fn from(value: u8) -> Self {
+        if value & Self::mask() != 0 {
+            SleepMode::Sleep
+        } else {
+            SleepMode::WakeUp
+        }
+    }
+
+    fn to_value(&self) -> u8 {
+        match self {
+            SleepMode::Sleep => 0x01,
+            SleepMode::WakeUp => 0x00,
         }
     }
 }
