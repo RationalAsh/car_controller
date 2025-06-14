@@ -365,6 +365,19 @@ pub const MPU6050_DMP_MEMORY_BANKS: u8 = 8;
 pub const MPU6050_DMP_MEMORY_BANK_SIZE: u16 = 256;
 pub const MPU6050_DMP_MEMORY_CHUNK_SIZE: u8 = 16;
 
+pub trait MPU6050BitField {
+    fn addr() -> u8;
+    fn location() -> u8;
+    fn length() -> u8 {
+        1 // Default length is 1 bit
+    }
+    fn mask() -> u8 {
+        (1 << Self::length()) - 1 // Default mask for the field
+    }
+    fn from(value: u8) -> Self; // Convert raw value to enum variant
+    fn to_value(&self) -> u8;
+}
+
 /// Clock source setting.
 /// An internal 8MHz oscillator, gyroscope based clock, or external sources can
 /// be selected as the MPU-60X0 clock source. When the internal 8 MHz oscillator
@@ -403,6 +416,49 @@ pub enum MPUClkSource {
     PLLWithExternal19_2MHz = 0x05,
     /// Reserved clock source.
     StopClockAndResetTimingGenerator = 0x07,
+}
+
+impl MPU6050BitField for MPUClkSource {
+    fn addr() -> u8 {
+        MPU6050_RA_PWR_MGMT_1
+    }
+
+    fn location() -> u8 {
+        MPU6050_PWR1_CLKSEL_BIT
+    }
+
+    fn length() -> u8 {
+        MPU6050_PWR1_CLKSEL_LENGTH
+    }
+
+    fn mask() -> u8 {
+        (1 << MPU6050_PWR1_CLKSEL_LENGTH) - 1
+    }
+
+    fn from(value: u8) -> Self {
+        match value {
+            0x00 => MPUClkSource::InternalOscillator,
+            0x01 => MPUClkSource::PLLWithXGyro,
+            0x02 => MPUClkSource::PLLWithYGyro,
+            0x03 => MPUClkSource::PLLWithZGyro,
+            0x04 => MPUClkSource::PLLWithExternal32kHz,
+            0x05 => MPUClkSource::PLLWithExternal19_2MHz,
+            0x07 => MPUClkSource::StopClockAndResetTimingGenerator,
+            _ => panic!("Invalid clock source value"),
+        }
+    }
+
+    fn to_value(&self) -> u8 {
+        match self {
+            MPUClkSource::InternalOscillator => 0x00,
+            MPUClkSource::PLLWithXGyro => 0x01,
+            MPUClkSource::PLLWithYGyro => 0x02,
+            MPUClkSource::PLLWithZGyro => 0x03,
+            MPUClkSource::PLLWithExternal32kHz => 0x04,
+            MPUClkSource::PLLWithExternal19_2MHz => 0x05,
+            MPUClkSource::StopClockAndResetTimingGenerator => 0x07,
+        }
+    }
 }
 
 /// I2C driver for the MPU6050 sensor.
@@ -456,38 +512,34 @@ impl<'d> MPU6050I2c<'d> {
         self.peripheral.blocking_write(self.address, &[reg, value])
     }
 
-    /// Set clock source setting.
-    /// An internal 8MHz oscillator, gyroscope based clock, or external sources can
-    /// be selected as the MPU-60X0 clock source. When the internal 8 MHz oscillator
-    /// or an external source is chosen as the clock source, the MPU-60X0 can operate
-    /// in low power modes with the gyroscopes disabled.
-    ///
-    /// Upon power up, the MPU-60X0 clock source defaults to the internal oscillator.
-    /// However, it is highly recommended that the device be configured to use one of
-    /// the gyroscopes (or an external clock source) as the clock reference for
-    /// improved stability. The clock source can be selected according to the following table:
-    ///
-    /// ```
-    /// CLK_SEL | Clock Source
-    /// --------+--------------------------------------
-    /// 0       | Internal oscillator
-    /// 1       | PLL with X Gyro reference
-    /// 2       | PLL with Y Gyro reference
-    /// 3       | PLL with Z Gyro reference
-    /// 4       | PLL with external 32.768kHz reference
-    /// 5       | PLL with external 19.2MHz reference
-    /// 6       | Reserved
-    /// 7       | Stops the clock and keeps the timing generator in reset
-    /// ```
-    pub fn set_clock_source(&mut self, src: MPUClkSource) -> Result<(), embassy_stm32::i2c::Error> {
-        let value = (src as u8) << MPU6050_PWR1_CLKSEL_BIT;
+    pub fn read_field<T: MPU6050BitField>(&mut self) -> Result<T, embassy_stm32::i2c::Error> {
+        // 1. Read the present 8-bit value in that register
+        let value = self.read_byte(T::addr())?;
 
-        match self.read_byte(MPU6050_RA_PWR_MGMT_1) {
-            Ok(current_value) => {
-                let new_value = (current_value & !(0x07 << MPU6050_PWR1_CLKSEL_BIT)) | value;
-                self.write_byte(MPU6050_RA_PWR_MGMT_1, new_value)
-            }
-            Err(e) => Err(e),
-        }
+        // 2. Shift the bits to the right so that the field is in the least significant bits
+        let shifted_value = value >> (T::location() - (T::length() - 1));
+
+        // 3. Mask the bits to get only the bits that belong to the field
+        let masked_value = shifted_value & T::mask();
+
+        // 4. Return the masked value
+        Ok(T::from(masked_value))
+    }
+
+    pub fn write_field<T: MPU6050BitField>(
+        &mut self,
+        field: T,
+    ) -> Result<(), embassy_stm32::i2c::Error> {
+        // 1. Read the present 8-bit value in that register
+        let mut current_value = self.read_byte(T::addr())?;
+
+        // 2. Clear (zero) the bits that belong to the field
+        current_value &= !(0xFF >> (8 - (1 << T::location())));
+
+        // 3. Insert the bits you want, lined up at the correct position
+        current_value |= (field.to_value() & ((1 << 1) - 1)) << T::location();
+
+        // 4. Write the new byte back to the device
+        self.write_byte(T::addr(), current_value)
     }
 }
