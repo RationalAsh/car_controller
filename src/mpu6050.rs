@@ -362,7 +362,7 @@ pub const MPU6050_WHO_AM_I_BIT: u8 = 6;
 pub const MPU6050_WHO_AM_I_LENGTH: u8 = 6;
 
 pub const MPU6050_DMP_MEMORY_BANKS: u8 = 8;
-pub const MPU6050_DMP_MEMORY_BANK_SIZE: u8 = 256;
+pub const MPU6050_DMP_MEMORY_BANK_SIZE: u16 = 256;
 pub const MPU6050_DMP_MEMORY_CHUNK_SIZE: u8 = 16;
 
 pub struct MPU6050<'d> {
