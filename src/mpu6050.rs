@@ -409,6 +409,7 @@ impl MPU6050BitField for DeviceReset {
     }
 }
 
+/// When set to 1, this bit puts the device into sleep mode.
 pub enum SleepMode {
     /// Device is in sleep mode.
     Sleep = 0x01,
@@ -437,6 +438,39 @@ impl MPU6050BitField for SleepMode {
         match self {
             SleepMode::Sleep => 0x01,
             SleepMode::WakeUp => 0x00,
+        }
+    }
+}
+
+/// When set to 1, and sleep is disabled, the MPU-60X0 will cycle
+/// between sleep mode and waking up to take a single measurement
+/// from active sensors at a rate determined by the LP_WAKE_CTRL.
+pub enum Cycle {
+    Cycle = 0x01,
+    NoCycle = 0x00,
+}
+
+impl MPU6050BitField for Cycle {
+    fn addr() -> u8 {
+        MPU6050_RA_PWR_MGMT_1
+    }
+
+    fn location() -> u8 {
+        MPU6050_PWR1_CYCLE_BIT
+    }
+
+    fn from(value: u8) -> Self {
+        if value & Self::mask() != 0 {
+            Cycle::Cycle
+        } else {
+            Cycle::NoCycle
+        }
+    }
+
+    fn to_value(&self) -> u8 {
+        match self {
+            Cycle::Cycle => 0x01,
+            Cycle::NoCycle => 0x00,
         }
     }
 }
