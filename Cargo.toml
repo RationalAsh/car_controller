@@ -36,6 +36,7 @@ embassy-stm32 = { version = "0.2.0", features = [
     "stm32f103c8",
     "memory-x",
     "time-driver-tim1",
+    "unstable-pac",
 ] }
 embassy-sync = { version = "0.7.0", features = ["defmt"] }
 embassy-time = { version = "0.4.0", features = ["defmt", "tick-hz-1_000_000"] }

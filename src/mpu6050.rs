@@ -365,13 +365,43 @@ pub const MPU6050_DMP_MEMORY_BANKS: u8 = 8;
 pub const MPU6050_DMP_MEMORY_BANK_SIZE: u16 = 256;
 pub const MPU6050_DMP_MEMORY_CHUNK_SIZE: u8 = 16;
 
+/// Clock source setting.
+/// An internal 8MHz oscillator, gyroscope based clock, or external sources can
+/// be selected as the MPU-60X0 clock source. When the internal 8 MHz oscillator
+/// or an external source is chosen as the clock source, the MPU-60X0 can operate
+/// in low power modes with the gyroscopes disabled.
+///
+/// Upon power up, the MPU-60X0 clock source defaults to the internal oscillator.
+/// However, it is highly recommended that the device be configured to use one of
+/// the gyroscopes (or an external clock source) as the clock reference for
+/// improved stability. The clock source can be selected according to the following table:
+///
+/// ```
+/// CLK_SEL | Clock Source
+/// --------+--------------------------------------
+/// 0       | Internal oscillator
+/// 1       | PLL with X Gyro reference
+/// 2       | PLL with Y Gyro reference
+/// 3       | PLL with Z Gyro reference
+/// 4       | PLL with external 32.768kHz reference
+/// 5       | PLL with external 19.2MHz reference
+/// 6       | Reserved
+/// 7       | Stops the clock and keeps the timing generator in reset
+/// ```
 pub enum MPUClkSource {
+    /// MPU6050 clock source is set to Internal oscillator, 8MHz.
     InternalOscillator = 0x00,
+    /// MPU6050 clock source is set to PLL with X Gyro reference.
     PLLWithXGyro = 0x01,
+    /// MPU6050 clock source is set to PLL with Y Gyro reference.
     PLLWithYGyro = 0x02,
+    /// MPU6050 clock source is set to PLL with Z Gyro reference.
     PLLWithZGyro = 0x03,
+    /// MPU6050 clock source is set to PLL with external 32.768kHz reference.
     PLLWithExternal32kHz = 0x04,
+    /// MPU6050 clock source is set to PLL with external 19.2MHz reference.
     PLLWithExternal19_2MHz = 0x05,
+    /// Reserved clock source.
     StopClockAndResetTimingGenerator = 0x07,
 }
 
@@ -388,7 +418,7 @@ impl<'d> MPU6050I2c<'d> {
                 peri,
                 scl_pin,
                 sda_pin,
-                Hertz::khz(400),
+                Hertz::khz(100),
                 Config::default(),
             ),
             address: MPU6050_DEFAULT_ADDRESS,
@@ -451,7 +481,13 @@ impl<'d> MPU6050I2c<'d> {
     /// ```
     pub fn set_clock_source(&mut self, src: MPUClkSource) -> Result<(), embassy_stm32::i2c::Error> {
         let value = (src as u8) << MPU6050_PWR1_CLKSEL_BIT;
-        self.peripheral
-            .blocking_write(MPU6050_DEFAULT_ADDRESS, &[MPU6050_RA_PWR_MGMT_1, value])
+
+        match self.read_byte(MPU6050_RA_PWR_MGMT_1) {
+            Ok(current_value) => {
+                let new_value = (current_value & !(0x07 << MPU6050_PWR1_CLKSEL_BIT)) | value;
+                self.write_byte(MPU6050_RA_PWR_MGMT_1, new_value)
+            }
+            Err(e) => Err(e),
+        }
     }
 }
