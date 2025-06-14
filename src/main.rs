@@ -3,7 +3,7 @@
 
 use car_controller::mpu6050::{
     MPU6050_CLOCK_PLL_XGYRO, MPU6050_RA_PWR_MGMT_1, MPU6050_RA_WHO_AM_I, MPU6050BitField,
-    MPU6050I2c, MPUClkSource,
+    MPU6050I2c, MPUClkSource, SleepMode, TempDisable,
 };
 use defmt::*;
 use embassy_executor::Spawner;
@@ -26,6 +26,8 @@ async fn main(_spawner: Spawner) {
     let mut imu_sensor = MPU6050I2c::new(p.I2C2, p.PB10, p.PB11);
 
     let _ = imu_sensor.write_field(MPUClkSource::PLLWithXGyro);
+    let _ = imu_sensor.write_field(TempDisable::Disable);
+    let _ = imu_sensor.write_field(SleepMode::WakeUp);
 
     loop {
         match imu_sensor.read_field::<MPUClkSource>() {

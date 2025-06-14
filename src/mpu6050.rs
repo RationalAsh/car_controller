@@ -647,7 +647,7 @@ impl<'d> MPU6050I2c<'d> {
         let value = self.read_byte(T::addr())?;
 
         // 2. Shift the bits to the right so that the field is in the least significant bits
-        let shifted_value = value >> (T::location() - (T::length() - 1));
+        let shifted_value = value >> (T::location() - T::length() + 1);
 
         // 3. Mask the bits to get only the bits that belong to the field
         let masked_value = shifted_value & T::mask();
@@ -664,10 +664,10 @@ impl<'d> MPU6050I2c<'d> {
         let mut current_value = self.read_byte(T::addr())?;
 
         // 2. Clear (zero) the bits that belong to the field
-        current_value &= !(0xFF >> (8 - (1 << T::location())));
+        current_value &= !(T::mask() << T::location());
 
         // 3. Insert the bits you want, lined up at the correct position
-        current_value |= (field.to_value() & ((1 << 1) - 1)) << T::location();
+        current_value |= (field.to_value() & T::mask()) << T::location();
 
         // 4. Write the new byte back to the device
         self.write_byte(T::addr(), current_value)
