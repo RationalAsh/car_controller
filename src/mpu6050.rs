@@ -365,13 +365,14 @@ pub const MPU6050_DMP_MEMORY_BANKS: u8 = 8;
 pub const MPU6050_DMP_MEMORY_BANK_SIZE: u16 = 256;
 pub const MPU6050_DMP_MEMORY_CHUNK_SIZE: u8 = 16;
 
-pub struct MPU6050<'d> {
+/// I2C driver for the MPU6050 sensor.
+pub struct MPU6050I2c<'d> {
     peripheral: I2c<'d, embassy_stm32::mode::Blocking>,
 }
 
-impl<'d> MPU6050<'d> {
+impl<'d> MPU6050I2c<'d> {
     pub fn new<P: Instance>(peri: P, scl_pin: impl SclPin<P>, sda_pin: impl SdaPin<P>) -> Self {
-        MPU6050 {
+        MPU6050I2c {
             peripheral: I2c::new_blocking(
                 peri,
                 scl_pin,
