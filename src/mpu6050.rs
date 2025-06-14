@@ -672,4 +672,113 @@ impl<'d> MPU6050I2c<'d> {
         // 4. Write the new byte back to the device
         self.write_byte(T::addr(), current_value)
     }
+
+    pub fn read_accel_x(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
+        let high = self.read_byte(MPU6050_RA_ACCEL_XOUT_H)?;
+        let low = self.read_byte(MPU6050_RA_ACCEL_XOUT_L)?;
+        Ok(((high as i16) << 8) | (low as i16))
+    }
+
+    pub fn read_accel_y(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
+        let high = self.read_byte(MPU6050_RA_ACCEL_YOUT_H)?;
+        let low = self.read_byte(MPU6050_RA_ACCEL_YOUT_L)?;
+        Ok(((high as i16) << 8) | (low as i16))
+    }
+
+    pub fn read_accel_z(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
+        let high = self.read_byte(MPU6050_RA_ACCEL_ZOUT_H)?;
+        let low = self.read_byte(MPU6050_RA_ACCEL_ZOUT_L)?;
+        Ok(((high as i16) << 8) | (low as i16))
+    }
+
+    pub fn read_temp(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
+        let high = self.read_byte(MPU6050_RA_TEMP_OUT_H)?;
+        let low = self.read_byte(MPU6050_RA_TEMP_OUT_L)?;
+        Ok(((high as i16) << 8) | (low as i16))
+    }
+
+    pub fn read_gyro_x(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
+        let high = self.read_byte(MPU6050_RA_GYRO_XOUT_H)?;
+        let low = self.read_byte(MPU6050_RA_GYRO_XOUT_L)?;
+        Ok(((high as i16) << 8) | (low as i16))
+    }
+
+    pub fn read_gyro_y(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
+        let high = self.read_byte(MPU6050_RA_GYRO_YOUT_H)?;
+        let low = self.read_byte(MPU6050_RA_GYRO_YOUT_L)?;
+        Ok(((high as i16) << 8) | (low as i16))
+    }
+
+    pub fn read_gyro_z(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
+        let high = self.read_byte(MPU6050_RA_GYRO_ZOUT_H)?;
+        let low = self.read_byte(MPU6050_RA_GYRO_ZOUT_L)?;
+        Ok(((high as i16) << 8) | (low as i16))
+    }
+
+    pub fn read_accel(&mut self) -> Result<(i16, i16, i16), embassy_stm32::i2c::Error> {
+        let mut data = [
+            MPU6050_RA_ACCEL_XOUT_H,
+            MPU6050_RA_ACCEL_XOUT_L,
+            MPU6050_RA_ACCEL_YOUT_H,
+            MPU6050_RA_ACCEL_YOUT_L,
+            MPU6050_RA_ACCEL_ZOUT_H,
+            MPU6050_RA_ACCEL_ZOUT_L,
+        ];
+
+        self.peripheral.blocking_read(self.address, &mut data)?;
+
+        let accel_x = ((data[0] as i16) << 8) | (data[1] as i16);
+        let accel_y = ((data[2] as i16) << 8) | (data[3] as i16);
+        let accel_z = ((data[4] as i16) << 8) | (data[5] as i16);
+
+        Ok((accel_x, accel_y, accel_z))
+    }
+
+    pub fn read_gyro(&mut self) -> Result<(i16, i16, i16), embassy_stm32::i2c::Error> {
+        let mut data = [
+            MPU6050_RA_GYRO_XOUT_H,
+            MPU6050_RA_GYRO_XOUT_L,
+            MPU6050_RA_GYRO_YOUT_H,
+            MPU6050_RA_GYRO_YOUT_L,
+            MPU6050_RA_GYRO_ZOUT_H,
+            MPU6050_RA_GYRO_ZOUT_L,
+        ];
+        self.peripheral.blocking_read(self.address, &mut data)?;
+
+        let gyro_x = ((data[0] as i16) << 8) | (data[1] as i16);
+        let gyro_y = ((data[2] as i16) << 8) | (data[3] as i16);
+        let gyro_z = ((data[4] as i16) << 8) | (data[5] as i16);
+        Ok((gyro_x, gyro_y, gyro_z))
+    }
+
+    pub fn read_all(
+        &mut self,
+    ) -> Result<(i16, i16, i16, i16, i16, i16, i16), embassy_stm32::i2c::Error> {
+        let mut data = [
+            MPU6050_RA_ACCEL_XOUT_H,
+            MPU6050_RA_ACCEL_XOUT_L,
+            MPU6050_RA_ACCEL_YOUT_H,
+            MPU6050_RA_ACCEL_YOUT_L,
+            MPU6050_RA_ACCEL_ZOUT_H,
+            MPU6050_RA_ACCEL_ZOUT_L,
+            MPU6050_RA_TEMP_OUT_H,
+            MPU6050_RA_TEMP_OUT_L,
+            MPU6050_RA_GYRO_XOUT_H,
+            MPU6050_RA_GYRO_XOUT_L,
+            MPU6050_RA_GYRO_YOUT_H,
+            MPU6050_RA_GYRO_YOUT_L,
+            MPU6050_RA_GYRO_ZOUT_H,
+            MPU6050_RA_GYRO_ZOUT_L,
+        ];
+        self.peripheral.blocking_read(self.address, &mut data)?;
+
+        let accel_x = ((data[0] as i16) << 8) | (data[1] as i16);
+        let accel_y = ((data[2] as i16) << 8) | (data[3] as i16);
+        let accel_z = ((data[4] as i16) << 8) | (data[5] as i16);
+        let temp = ((data[6] as i16) << 8) | (data[7] as i16);
+        let gyro_x = ((data[8] as i16) << 8) | (data[9] as i16);
+        let gyro_y = ((data[10] as i16) << 8) | (data[11] as i16);
+        let gyro_z = ((data[12] as i16) << 8) | (data[13] as i16);
+        Ok((accel_x, accel_y, accel_z, temp, gyro_x, gyro_y, gyro_z))
+    }
 }
