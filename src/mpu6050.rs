@@ -475,6 +475,39 @@ impl MPU6050BitField for Cycle {
     }
 }
 
+/// When set to 1, this bit disables the temperature sensor.
+pub enum TempDisable {
+    /// Disable the temperature sensor.
+    Disable = 0x01,
+    /// Enable the temperature sensor.
+    Enable = 0x00,
+}
+
+impl MPU6050BitField for TempDisable {
+    fn addr() -> u8 {
+        MPU6050_RA_PWR_MGMT_1
+    }
+
+    fn location() -> u8 {
+        MPU6050_PWR1_TEMP_DIS_BIT
+    }
+
+    fn from(value: u8) -> Self {
+        if value & Self::mask() != 0 {
+            TempDisable::Disable
+        } else {
+            TempDisable::Enable
+        }
+    }
+
+    fn to_value(&self) -> u8 {
+        match self {
+            TempDisable::Disable => 0x01,
+            TempDisable::Enable => 0x00,
+        }
+    }
+}
+
 /// Clock source setting.
 /// An internal 8MHz oscillator, gyroscope based clock, or external sources can
 /// be selected as the MPU-60X0 clock source. When the internal 8 MHz oscillator
