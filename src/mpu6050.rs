@@ -378,6 +378,35 @@ pub trait MPU6050BitField {
     fn to_value(&self) -> u8;
 }
 
+pub enum DeviceReset {
+    /// Reset the device.
+    Reset = 0x01,
+}
+
+impl MPU6050BitField for DeviceReset {
+    fn addr() -> u8 {
+        MPU6050_RA_PWR_MGMT_1
+    }
+
+    fn location() -> u8 {
+        MPU6050_PWR1_DEVICE_RESET_BIT
+    }
+
+    fn from(value: u8) -> Self {
+        if value & Self::mask() != 0 {
+            DeviceReset::Reset
+        } else {
+            panic!("Invalid device reset value")
+        }
+    }
+
+    fn to_value(&self) -> u8 {
+        match self {
+            DeviceReset::Reset => 0x01,
+        }
+    }
+}
+
 /// Clock source setting.
 /// An internal 8MHz oscillator, gyroscope based clock, or external sources can
 /// be selected as the MPU-60X0 clock source. When the internal 8 MHz oscillator
