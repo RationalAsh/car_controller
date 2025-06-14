@@ -1,11 +1,13 @@
 #![no_std]
 #![no_main]
 
+use car_controller::mpu6050::MPU6050I2c;
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_stm32::{
     Config, Peripherals,
     gpio::{Level, Output, Speed},
+    peripherals::I2C2,
     rcc::{Hse, HseMode},
     time::Hertz,
 };
@@ -18,6 +20,8 @@ async fn main(_spawner: Spawner) {
     info!("Hello World!");
 
     let mut led = Output::new(p.PC13, Level::High, Speed::Low);
+
+    // let mpu = MPU6050I2c::new(p.I2C2, p.PB8.into(), p.PB9.into());
 
     loop {
         info!("high");
