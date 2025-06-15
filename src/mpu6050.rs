@@ -674,50 +674,52 @@ impl<'d> MPU6050I2c<'d> {
     }
 
     pub fn read_accel_x(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
-        let high = self.read_byte(MPU6050_RA_ACCEL_XOUT_H)?;
-        let low = self.read_byte(MPU6050_RA_ACCEL_XOUT_L)?;
-        Ok(((high as i16) << 8) | (low as i16))
+        let mut data = [MPU6050_RA_ACCEL_XOUT_H, MPU6050_RA_ACCEL_XOUT_L];
+        self.peripheral
+            .blocking_write_read(self.address, &[MPU6050_RA_ACCEL_XOUT_H], &mut data)?;
+        Ok(((data[0] as i16) << 8) | (data[1] as i16))
     }
 
     pub fn read_accel_y(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
-        let high = self.read_byte(MPU6050_RA_ACCEL_YOUT_H)?;
-        let low = self.read_byte(MPU6050_RA_ACCEL_YOUT_L)?;
-        Ok(((high as i16) << 8) | (low as i16))
+        let mut data = [MPU6050_RA_ACCEL_YOUT_H, MPU6050_RA_ACCEL_YOUT_L];
+        self.peripheral
+            .blocking_write_read(self.address, &[MPU6050_RA_ACCEL_YOUT_H], &mut data)?;
+        Ok(((data[0] as i16) << 8) | (data[1] as i16))
     }
 
     pub fn read_accel_z(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
-        let high = self.read_byte(MPU6050_RA_ACCEL_ZOUT_H)?;
-        let low = self.read_byte(MPU6050_RA_ACCEL_ZOUT_L)?;
-        Ok(((high as i16) << 8) | (low as i16))
+        let mut data = [MPU6050_RA_ACCEL_ZOUT_H, MPU6050_RA_ACCEL_ZOUT_L];
+        self.peripheral
+            .blocking_write_read(self.address, &[MPU6050_RA_ACCEL_ZOUT_H], &mut data)?;
+        Ok(((data[0] as i16) << 8) | (data[1] as i16))
     }
 
     pub fn read_temp(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
-        let high = self.read_byte(MPU6050_RA_TEMP_OUT_H)?;
-        let low = self.read_byte(MPU6050_RA_TEMP_OUT_L)?;
-        Ok(((high as i16) << 8) | (low as i16))
+        let mut data = [MPU6050_RA_TEMP_OUT_H, MPU6050_RA_TEMP_OUT_L];
+        self.peripheral
+            .blocking_write_read(self.address, &[MPU6050_RA_TEMP_OUT_H], &mut data)?;
+        Ok(((data[0] as i16) << 8) | (data[1] as i16))
     }
 
     pub fn read_gyro_x(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
-        let high = self.read_byte(MPU6050_RA_GYRO_XOUT_H)?;
-        let low = self.read_byte(MPU6050_RA_GYRO_XOUT_L)?;
-        Ok(((high as i16) << 8) | (low as i16))
+        let mut data = [MPU6050_RA_GYRO_XOUT_H, MPU6050_RA_GYRO_XOUT_L];
+        self.peripheral
+            .blocking_write_read(self.address, &[MPU6050_RA_GYRO_XOUT_H], &mut data)?;
+        Ok(((data[0] as i16) << 8) | (data[1] as i16))
     }
 
     pub fn read_gyro_y(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
-        let high = self.read_byte(MPU6050_RA_GYRO_YOUT_H)?;
-        let low = self.read_byte(MPU6050_RA_GYRO_YOUT_L)?;
-        Ok(((high as i16) << 8) | (low as i16))
+        let mut data = [MPU6050_RA_GYRO_YOUT_H, MPU6050_RA_GYRO_YOUT_L];
+        self.peripheral
+            .blocking_write_read(self.address, &[MPU6050_RA_GYRO_YOUT_H], &mut data)?;
+        Ok(((data[0] as i16) << 8) | (data[1] as i16))
     }
 
     pub fn read_gyro_z(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
-        // let high = self.read_byte(MPU6050_RA_GYRO_ZOUT_H)?;
-        // let low = self.read_byte(MPU6050_RA_GYRO_ZOUT_L)?;
         let mut data = [MPU6050_RA_GYRO_ZOUT_H, MPU6050_RA_GYRO_ZOUT_L];
         self.peripheral
             .blocking_write_read(self.address, &[MPU6050_RA_GYRO_ZOUT_H], &mut data)?;
-        let high = data[0];
-        let low = data[1];
-        Ok(((high as i16) << 8) | (low as i16))
+        Ok(((data[0] as i16) << 8) | (data[1] as i16))
     }
 
     pub fn read_accel(&mut self) -> Result<(i16, i16, i16), embassy_stm32::i2c::Error> {

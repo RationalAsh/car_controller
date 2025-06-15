@@ -46,14 +46,14 @@ async fn main(_spawner: Spawner) {
                 error!("Failed to read gyroscope: {:?}", e);
             }
         }
-        // match imu_sensor.read_gyro_z() {
-        //     Ok(gyro_z) => {
-        //         info!("Gyro Z: {}", gyro_z);
-        //     }
-        //     Err(e) => {
-        //         error!("Failed to read gyro Z: {:?}", e);
-        //     }
-        // }
+        match imu_sensor.read_gyro_z() {
+            Ok(gyro_z) => {
+                info!("Gyro Z: {}", gyro_z);
+            }
+            Err(e) => {
+                error!("Failed to read gyro Z: {:?}", e);
+            }
+        }
 
         led.toggle();
         ticker.next().await;
