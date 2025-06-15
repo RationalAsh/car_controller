@@ -27,9 +27,9 @@ async fn main(_spawner: Spawner) {
 
     let _ = imu_sensor.write_field(MPUClkSource::PLLWithXGyro);
     let _ = imu_sensor.write_field(TempDisable::Disable);
-    let _ = imu_sensor.write_field(SleepMode::WakeUp);
-    let _ = imu_sensor.write_field(GyroFullScaleRange::FS250);
+    let _ = imu_sensor.write_field(GyroFullScaleRange::FS500);
     let _ = imu_sensor.write_field(AccelFullScaleRange::FS2);
+    let _ = imu_sensor.write_field(SleepMode::WakeUp);
 
     let mut ticker = Ticker::every(Duration::from_hz(50));
 
