@@ -591,6 +591,102 @@ impl MPU6050BitField for MPUClkSource {
     }
 }
 
+pub enum GyroFullScaleRange {
+    /// Full scale range of ±250 degrees/second.
+    FS250 = 0x00,
+    /// Full scale range of ±500 degrees/second.
+    FS500 = 0x01,
+    /// Full scale range of ±1000 degrees/second.
+    FS1000 = 0x02,
+    /// Full scale range of ±2000 degrees/second.
+    FS2000 = 0x03,
+}
+
+impl MPU6050BitField for GyroFullScaleRange {
+    fn addr() -> u8 {
+        MPU6050_RA_GYRO_CONFIG
+    }
+
+    fn location() -> u8 {
+        MPU6050_GCONFIG_FS_SEL_BIT
+    }
+
+    fn length() -> u8 {
+        MPU6050_GCONFIG_FS_SEL_LENGTH
+    }
+
+    fn mask() -> u8 {
+        (1 << MPU6050_GCONFIG_FS_SEL_LENGTH) - 1
+    }
+
+    fn from(value: u8) -> Self {
+        match value {
+            0x00 => GyroFullScaleRange::FS250,
+            0x01 => GyroFullScaleRange::FS500,
+            0x02 => GyroFullScaleRange::FS1000,
+            0x03 => GyroFullScaleRange::FS2000,
+            _ => panic!("Invalid gyro full scale range value"),
+        }
+    }
+
+    fn to_value(&self) -> u8 {
+        match self {
+            GyroFullScaleRange::FS250 => 0x00,
+            GyroFullScaleRange::FS500 => 0x01,
+            GyroFullScaleRange::FS1000 => 0x02,
+            GyroFullScaleRange::FS2000 => 0x03,
+        }
+    }
+}
+
+pub enum AccelFullScaleRange {
+    /// Full scale range of ±2g.
+    FS2 = 0x00,
+    /// Full scale range of ±4g.
+    FS4 = 0x01,
+    /// Full scale range of ±8g.
+    FS8 = 0x02,
+    /// Full scale range of ±16g.
+    FS16 = 0x03,
+}
+
+impl MPU6050BitField for AccelFullScaleRange {
+    fn addr() -> u8 {
+        MPU6050_RA_ACCEL_CONFIG
+    }
+
+    fn location() -> u8 {
+        MPU6050_ACONFIG_AFS_SEL_BIT
+    }
+
+    fn length() -> u8 {
+        MPU6050_ACONFIG_AFS_SEL_LENGTH
+    }
+
+    fn mask() -> u8 {
+        (1 << MPU6050_ACONFIG_AFS_SEL_LENGTH) - 1
+    }
+
+    fn from(value: u8) -> Self {
+        match value {
+            0x00 => AccelFullScaleRange::FS2,
+            0x01 => AccelFullScaleRange::FS4,
+            0x02 => AccelFullScaleRange::FS8,
+            0x03 => AccelFullScaleRange::FS16,
+            _ => panic!("Invalid accel full scale range value"),
+        }
+    }
+
+    fn to_value(&self) -> u8 {
+        match self {
+            AccelFullScaleRange::FS2 => 0x00,
+            AccelFullScaleRange::FS4 => 0x01,
+            AccelFullScaleRange::FS8 => 0x02,
+            AccelFullScaleRange::FS16 => 0x03,
+        }
+    }
+}
+
 /// I2C driver for the MPU6050 sensor.
 pub struct MPU6050I2c<'d> {
     peripheral: I2c<'d, embassy_stm32::mode::Blocking>,
@@ -758,6 +854,17 @@ impl<'d> MPU6050I2c<'d> {
         let gyro_y = ((data[2] as i16) << 8) | (data[3] as i16);
         let gyro_z = ((data[4] as i16) << 8) | (data[5] as i16);
         Ok((gyro_x, gyro_y, gyro_z))
+    }
+
+    pub fn read_accel_gyro(
+        &mut self,
+    ) -> Result<(i16, i16, i16, i16, i16, i16), embassy_stm32::i2c::Error> {
+        let accel = self.read_accel()?;
+        let gyro = self.read_gyro()?;
+        let (accel_x, accel_y, accel_z) = accel;
+        let (gyro_x, gyro_y, gyro_z) = gyro;
+
+        Ok((accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z))
     }
 
     pub fn read_all(

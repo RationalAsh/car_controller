@@ -1,7 +1,10 @@
 #![no_std]
 #![no_main]
 
-use car_controller::mpu6050::{MPU6050BitField, MPU6050I2c, MPUClkSource, SleepMode, TempDisable};
+use car_controller::mpu6050::{
+    AccelFullScaleRange, GyroFullScaleRange, MPU6050BitField, MPU6050I2c, MPUClkSource, SleepMode,
+    TempDisable,
+};
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_stm32::{
@@ -25,33 +28,18 @@ async fn main(_spawner: Spawner) {
     let _ = imu_sensor.write_field(MPUClkSource::PLLWithXGyro);
     let _ = imu_sensor.write_field(TempDisable::Disable);
     let _ = imu_sensor.write_field(SleepMode::WakeUp);
+    let _ = imu_sensor.write_field(GyroFullScaleRange::FS250);
+    let _ = imu_sensor.write_field(AccelFullScaleRange::FS2);
 
-    let mut ticker = Ticker::every(Duration::from_hz(100));
+    let mut ticker = Ticker::every(Duration::from_hz(50));
 
     loop {
-        match imu_sensor.read_accel() {
-            Ok(accel) => {
-                info!("Accel X: {}, Y: {}, Z: {}", accel.0, accel.1, accel.2);
+        match imu_sensor.read_accel_gyro() {
+            Ok((ax, ay, az, gx, gy, gz)) => {
+                info!("{} {} {} {} {} {}", ax, ay, az, gx, gy, gz);
             }
             Err(e) => {
-                error!("Failed to read accelerometer: {:?}", e);
-            }
-        }
-
-        match imu_sensor.read_gyro() {
-            Ok(gyro) => {
-                info!("Gyro X: {}, Y: {}, Z: {}", gyro.0, gyro.1, gyro.2);
-            }
-            Err(e) => {
-                error!("Failed to read gyroscope: {:?}", e);
-            }
-        }
-        match imu_sensor.read_gyro_z() {
-            Ok(gyro_z) => {
-                info!("Gyro Z: {}", gyro_z);
-            }
-            Err(e) => {
-                error!("Failed to read gyro Z: {:?}", e);
+                error!("Error reading IMU data: {:?}", e);
             }
         }
 
