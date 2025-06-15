@@ -604,7 +604,7 @@ impl<'d> MPU6050I2c<'d> {
                 peri,
                 scl_pin,
                 sda_pin,
-                Hertz::khz(100),
+                Hertz::khz(200),
                 Config::default(),
             ),
             address: MPU6050_DEFAULT_ADDRESS,
@@ -725,7 +725,8 @@ impl<'d> MPU6050I2c<'d> {
             MPU6050_RA_ACCEL_ZOUT_L,
         ];
 
-        self.peripheral.blocking_read(self.address, &mut data)?;
+        self.peripheral
+            .blocking_write_read(self.address, &[MPU6050_RA_ACCEL_XOUT_H], &mut data)?;
 
         let accel_x = ((data[0] as i16) << 8) | (data[1] as i16);
         let accel_y = ((data[2] as i16) << 8) | (data[3] as i16);
@@ -743,7 +744,8 @@ impl<'d> MPU6050I2c<'d> {
             MPU6050_RA_GYRO_ZOUT_H,
             MPU6050_RA_GYRO_ZOUT_L,
         ];
-        self.peripheral.blocking_read(self.address, &mut data)?;
+        self.peripheral
+            .blocking_write_read(self.address, &[MPU6050_RA_GYRO_XOUT_H], &mut data)?;
 
         let gyro_x = ((data[0] as i16) << 8) | (data[1] as i16);
         let gyro_y = ((data[2] as i16) << 8) | (data[3] as i16);
@@ -770,6 +772,8 @@ impl<'d> MPU6050I2c<'d> {
             MPU6050_RA_GYRO_ZOUT_H,
             MPU6050_RA_GYRO_ZOUT_L,
         ];
+        self.peripheral
+            .blocking_write(self.address, &[MPU6050_RA_ACCEL_XOUT_H])?;
         self.peripheral.blocking_read(self.address, &mut data)?;
 
         let accel_x = ((data[0] as i16) << 8) | (data[1] as i16);

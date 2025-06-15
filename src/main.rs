@@ -27,29 +27,35 @@ async fn main(_spawner: Spawner) {
     let _ = imu_sensor.write_field(SleepMode::WakeUp);
 
     loop {
+        led.set_high();
         match imu_sensor.read_accel() {
             Ok(accel) => {
-                info!("Accel: x: {}, y: {}, z: {}", accel.0, accel.1, accel.2);
+                info!("Accel X: {}, Y: {}, Z: {}", accel.0, accel.1, accel.2);
             }
             Err(e) => {
-                error!("Error reading accelerometer: {:?}", e);
+                error!("Failed to read accelerometer: {:?}", e);
             }
         }
 
         match imu_sensor.read_gyro() {
             Ok(gyro) => {
-                info!("Gyro: x: {}, y: {}, z: {}", gyro.0, gyro.1, gyro.2);
+                info!("Gyro X: {}, Y: {}, Z: {}", gyro.0, gyro.1, gyro.2);
             }
             Err(e) => {
-                error!("Error reading gyroscope: {:?}", e);
+                error!("Failed to read gyroscope: {:?}", e);
             }
         }
-
-        led.set_high();
-        Timer::after_millis(100).await;
+        // match imu_sensor.read_gyro_z() {
+        //     Ok(gyro_z) => {
+        //         info!("Gyro Z: {}", gyro_z);
+        //     }
+        //     Err(e) => {
+        //         error!("Failed to read gyro Z: {:?}", e);
+        //     }
+        // }
 
         led.set_low();
-        Timer::after_millis(100).await;
+        Timer::after_millis(10).await;
     }
 }
 
