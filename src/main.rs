@@ -10,7 +10,7 @@ use embassy_stm32::{
     rcc::{APBPrescaler, Hse, HseMode, Pll, PllMul, PllPreDiv, PllSource, Sysclk},
     time::Hertz,
 };
-use embassy_time::Timer;
+use embassy_time::{Duration, Ticker, Timer};
 use {defmt_rtt as _, panic_probe as _};
 
 #[embassy_executor::main]
@@ -26,8 +26,9 @@ async fn main(_spawner: Spawner) {
     let _ = imu_sensor.write_field(TempDisable::Disable);
     let _ = imu_sensor.write_field(SleepMode::WakeUp);
 
+    let mut ticker = Ticker::every(Duration::from_hz(100));
+
     loop {
-        led.set_high();
         match imu_sensor.read_accel() {
             Ok(accel) => {
                 info!("Accel X: {}, Y: {}, Z: {}", accel.0, accel.1, accel.2);
@@ -54,8 +55,8 @@ async fn main(_spawner: Spawner) {
         //     }
         // }
 
-        led.set_low();
-        Timer::after_millis(10).await;
+        led.toggle();
+        ticker.next().await;
     }
 }
 

@@ -710,8 +710,13 @@ impl<'d> MPU6050I2c<'d> {
     }
 
     pub fn read_gyro_z(&mut self) -> Result<i16, embassy_stm32::i2c::Error> {
-        let high = self.read_byte(MPU6050_RA_GYRO_ZOUT_H)?;
-        let low = self.read_byte(MPU6050_RA_GYRO_ZOUT_L)?;
+        // let high = self.read_byte(MPU6050_RA_GYRO_ZOUT_H)?;
+        // let low = self.read_byte(MPU6050_RA_GYRO_ZOUT_L)?;
+        let mut data = [MPU6050_RA_GYRO_ZOUT_H, MPU6050_RA_GYRO_ZOUT_L];
+        self.peripheral
+            .blocking_write_read(self.address, &[MPU6050_RA_GYRO_ZOUT_H], &mut data)?;
+        let high = data[0];
+        let low = data[1];
         Ok(((high as i16) << 8) | (low as i16))
     }
 
@@ -772,9 +777,9 @@ impl<'d> MPU6050I2c<'d> {
             MPU6050_RA_GYRO_ZOUT_H,
             MPU6050_RA_GYRO_ZOUT_L,
         ];
+
         self.peripheral
-            .blocking_write(self.address, &[MPU6050_RA_ACCEL_XOUT_H])?;
-        self.peripheral.blocking_read(self.address, &mut data)?;
+            .blocking_write_read(self.address, &[MPU6050_RA_ACCEL_XOUT_H], &mut data)?;
 
         let accel_x = ((data[0] as i16) << 8) | (data[1] as i16);
         let accel_y = ((data[2] as i16) << 8) | (data[3] as i16);
