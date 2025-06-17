@@ -23,7 +23,7 @@ async fn main(_spawner: Spawner) {
 
     let mut led = Output::new(p.PC13, Level::High, Speed::Low);
 
-    let mut imu_sensor = MPU6050I2c::new(p.I2C2, p.PB10, p.PB11);
+    let mut imu_sensor = MPU6050I2c::new(p.I2C2, p.PB10, p.PB11, Hertz::khz(400));
 
     let _ = imu_sensor.write_field(MPUClkSource::PLLWithXGyro);
     let _ = imu_sensor.write_field(TempDisable::Disable);
@@ -34,6 +34,14 @@ async fn main(_spawner: Spawner) {
     let mut ticker = Ticker::every(Duration::from_hz(50));
 
     loop {
+        // match imu_sensor.read_field::<GyroFullScaleRange>() {
+        //     Ok(gfsr) => {
+        //         info!("Gyro Full Scale Range: {:?}", gfsr);
+        //     }
+        //     Err(e) => {
+        //         error!("Error reading Gyro Full Scale Range: {:?}", e);
+        //     }
+        // }
         match imu_sensor.read_accel_gyro() {
             Ok((ax, ay, az, gx, gy, gz)) => {
                 info!("{} {} {} {} {} {}", ax, ay, az, gx, gy, gz);

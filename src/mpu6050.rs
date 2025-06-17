@@ -687,6 +687,36 @@ impl MPU6050BitField for AccelFullScaleRange {
     }
 }
 
+pub struct WhoAmI {
+    pub value: u8,
+}
+
+impl MPU6050BitField for WhoAmI {
+    fn addr() -> u8 {
+        MPU6050_RA_WHO_AM_I
+    }
+
+    fn location() -> u8 {
+        MPU6050_WHO_AM_I_BIT
+    }
+
+    fn length() -> u8 {
+        MPU6050_WHO_AM_I_LENGTH
+    }
+
+    fn mask() -> u8 {
+        (1 << MPU6050_WHO_AM_I_LENGTH) - 1
+    }
+
+    fn from(value: u8) -> Self {
+        WhoAmI { value }
+    }
+
+    fn to_value(&self) -> u8 {
+        self.value
+    }
+}
+
 /// I2C driver for the MPU6050 sensor.
 pub struct MPU6050I2c<'d> {
     peripheral: I2c<'d, embassy_stm32::mode::Blocking>,
@@ -694,15 +724,14 @@ pub struct MPU6050I2c<'d> {
 }
 
 impl<'d> MPU6050I2c<'d> {
-    pub fn new<P: Instance>(peri: P, scl_pin: impl SclPin<P>, sda_pin: impl SdaPin<P>) -> Self {
+    pub fn new<P: Instance>(
+        peri: P,
+        scl_pin: impl SclPin<P>,
+        sda_pin: impl SdaPin<P>,
+        freq: Hertz,
+    ) -> Self {
         MPU6050I2c {
-            peripheral: I2c::new_blocking(
-                peri,
-                scl_pin,
-                sda_pin,
-                Hertz::khz(200),
-                Config::default(),
-            ),
+            peripheral: I2c::new_blocking(peri, scl_pin, sda_pin, freq, Config::default()),
             address: MPU6050_DEFAULT_ADDRESS,
         }
     }
@@ -712,15 +741,10 @@ impl<'d> MPU6050I2c<'d> {
         scl_pin: impl SclPin<P>,
         sda_pin: impl SdaPin<P>,
         address: u8,
+        freq: Hertz,
     ) -> Self {
         MPU6050I2c {
-            peripheral: I2c::new_blocking(
-                peri,
-                scl_pin,
-                sda_pin,
-                Hertz::khz(400),
-                Config::default(),
-            ),
+            peripheral: I2c::new_blocking(peri, scl_pin, sda_pin, freq, Config::default()),
             address,
         }
     }
