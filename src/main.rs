@@ -1,9 +1,9 @@
 #![no_std]
 #![no_main]
 
-use car_controller::mpu6050::{
-    AccelFullScaleRange, GyroFullScaleRange, MPU6050BitField, MPU6050I2c, MPUClkSource, SleepMode,
-    TempDisable,
+use car_controller::{
+    AccelFullScaleRange, GyroFullScaleRange, MPUClkSource, SleepMode, TempDisable,
+    mpu6050::MPU6050I2c,
 };
 use defmt::*;
 use embassy_executor::Spawner;
@@ -13,7 +13,7 @@ use embassy_stm32::{
     rcc::{APBPrescaler, Hse, HseMode, Pll, PllMul, PllPreDiv, PllSource, Sysclk},
     time::Hertz,
 };
-use embassy_time::{Duration, Ticker, Timer};
+use embassy_time::{Duration, Ticker};
 use {defmt_rtt as _, panic_probe as _};
 
 #[embassy_executor::main]
