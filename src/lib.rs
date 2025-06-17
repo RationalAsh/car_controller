@@ -362,6 +362,19 @@ pub const MPU6050_DMP_MEMORY_BANKS: u8 = 8;
 pub const MPU6050_DMP_MEMORY_BANK_SIZE: u16 = 256;
 pub const MPU6050_DMP_MEMORY_CHUNK_SIZE: u8 = 16;
 
+pub trait MPU6050BitField {
+    fn addr() -> u8;
+    fn location() -> u8;
+    fn length() -> u8 {
+        1 // Default length is 1 bit
+    }
+    fn mask() -> u8 {
+        (1 << Self::length()) - 1 // Default mask for the field
+    }
+    fn from(value: u8) -> Self; // Convert raw value to enum variant
+    fn to_value(&self) -> u8;
+}
+
 // When set to 1, this bit resets all internal registers to their
 // default values. The bit automatically clears to 0 after the reset is complete.
 pub enum DeviceReset {
@@ -699,19 +712,6 @@ impl MPU6050BitField for WhoAmI {
     fn to_value(&self) -> u8 {
         self.value
     }
-}
-
-pub trait MPU6050BitField {
-    fn addr() -> u8;
-    fn location() -> u8;
-    fn length() -> u8 {
-        1 // Default length is 1 bit
-    }
-    fn mask() -> u8 {
-        (1 << Self::length()) - 1 // Default mask for the field
-    }
-    fn from(value: u8) -> Self; // Convert raw value to enum variant
-    fn to_value(&self) -> u8;
 }
 
 pub mod mpu6050;
