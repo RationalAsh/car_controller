@@ -22,8 +22,16 @@ async fn main(_spawner: Spawner) {
     info!("Hello World!");
 
     let mut led = Output::new(p.PC13, Level::High, Speed::Low);
+    let peripheral = embassy_stm32::i2c::I2c::new_blocking(
+        p.I2C2,
+        p.PB10,
+        p.PB11,
+        Hertz::khz(400),
+        embassy_stm32::i2c::Config::default(),
+    );
 
-    let mut imu_sensor = MPU6050I2c::new(p.I2C2, p.PB10, p.PB11, Hertz::khz(400));
+    // let mut imu_sensor = MPU6050I2c::new(p.I2C2, p.PB10, p.PB11, Hertz::khz(400));
+    let mut imu_sensor = car_controller::mpu6050v2::MPU6050::new(peripheral);
 
     let _ = imu_sensor.write_field(MPUClkSource::PLLWithXGyro);
     let _ = imu_sensor.write_field(TempDisable::Disable);
